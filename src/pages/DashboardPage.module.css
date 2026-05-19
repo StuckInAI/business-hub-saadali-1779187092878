@@ -1,0 +1,150 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+  max-width: 1200px;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-4);
+}
+
+.chartsRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-4);
+}
+
+.chartCard {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-5);
+  box-shadow: var(--shadow-sm);
+}
+
+.chartTitle {
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-4);
+}
+
+.empty {
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  text-align: center;
+  padding: var(--spacing-8) 0;
+}
+
+.barList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.barItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.barLabel {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  width: 140px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.barTrack {
+  flex: 1;
+  height: 8px;
+  background: var(--bg-base);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+.barValue {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--text-primary);
+  width: 20px;
+  text-align: right;
+}
+
+.rateCard {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-5);
+  box-shadow: var(--shadow-sm);
+}
+
+.rateRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.rateItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+}
+
+.rateBar {
+  flex: 1;
+  height: 12px;
+  background: var(--bg-base);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.rateBarFill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.4s ease;
+}
+
+.rateLabel {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  width: 70px;
+  flex-shrink: 0;
+}
+
+.ratePercent {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  width: 40px;
+  text-align: right;
+}
