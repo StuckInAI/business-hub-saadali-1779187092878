@@ -14,77 +14,93 @@ export function PublicApplyPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [coverLetter, setCoverLetter] = useState('');
+  const [cover, setCover] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
-  if (!job || job.status !== 'active') {
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-base)' }}>
-        <div style={{ textAlign: 'center' }}>
-          <h2 style={{ color: 'var(--text-primary)', marginBottom: '1rem' }}>Position not available</h2>
-          <Button onClick={() => navigate('/jobs')}>View Open Positions</Button>
-        </div>
-      </div>
-    );
-  }
+  if (!job) return <div style={{ padding: '2rem' }}>Job not found.</div>;
 
-  if (submitted) {
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-base)' }}>
-        <div style={{ textAlign: 'center', maxWidth: 480 }}>
-          <h2 style={{ color: 'var(--color-secondary)', fontSize: 'var(--font-size-2xl)', fontWeight: 800, marginBottom: '1rem' }}>Application Submitted!</h2>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>Thank you for applying for <strong>{job.title}</strong>. We will be in touch soon.</p>
-          <Button onClick={() => navigate('/jobs')}>View More Jobs</Button>
-        </div>
-      </div>
-    );
-  }
-
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const now = new Date().toISOString();
     addApplication({
       jobId: job!.id,
+      jobTitle: job!.title,
       applicantName: name,
       applicantEmail: email,
       applicantPhone: phone,
-      coverLetter,
+      coverLetter: cover,
       resumeUrl: '',
-      status: 'new',
-      appliedAt: new Date().toISOString(),
+      status: 'applied',
+      appliedAt: now,
+      updatedAt: now,
       notes: '',
     });
     setSubmitted(true);
   }
 
-  const inputStyle = { width: '100%', padding: '9px 12px', borderRadius: 'var(--border-radius-sm)', border: '1px solid var(--border-color)', fontSize: 'var(--font-size-sm)', background: 'var(--bg-surface)', color: 'var(--text-primary)', outline: 'none' };
-  const labelStyle = { fontSize: 'var(--font-size-sm)', fontWeight: 600 as const, color: 'var(--text-primary)', display: 'block' as const, marginBottom: '0.35rem' };
+  if (submitted) {
+    return (
+      <div style={{ maxWidth: 480, margin: '4rem auto', textAlign: 'center', padding: '0 1rem' }}>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>Application Submitted!</h2>
+        <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>Thank you for applying to <strong>{job.title}</strong>. We'll be in touch!</p>
+        <Button onClick={() => navigate('/jobs')}>Browse More Jobs</Button>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-base)', padding: '2rem 1rem' }}>
-      <div style={{ maxWidth: 560, margin: '0 auto' }}>
-        <Button variant="ghost" onClick={() => navigate('/jobs')} style={{ marginBottom: '1rem' }}>&larr; Back to Jobs</Button>
-        <h1 style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>Apply for {job.title}</h1>
-        <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>{job.department} &bull; {job.location}</p>
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 'var(--border-radius-md)', padding: '1.5rem' }}>
-          <div>
-            <label style={labelStyle}>Full Name *</label>
-            <input style={inputStyle} value={name} onChange={e => setName(e.target.value)} required placeholder="Jane Doe" />
-          </div>
-          <div>
-            <label style={labelStyle}>Email *</label>
-            <input style={inputStyle} type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="jane@example.com" />
-          </div>
-          <div>
-            <label style={labelStyle}>Phone</label>
-            <input style={inputStyle} type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+1 555 000 0000" />
-          </div>
-          <div>
-            <label style={labelStyle}>Cover Letter</label>
-            <textarea style={{ ...inputStyle, resize: 'vertical', minHeight: 120 }} value={coverLetter} onChange={e => setCoverLetter(e.target.value)} placeholder="Tell us why you're a great fit..." />
-          </div>
-          <Button type="submit" size="lg">Submit Application</Button>
-        </form>
-      </div>
+    <div style={{ maxWidth: 560, margin: '2rem auto', padding: '0 1rem' }}>
+      <button
+        onClick={() => navigate('/jobs')}
+        style={{ marginBottom: '1rem', background: 'none', color: '#6b7280', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+      >
+        &larr; Back to Jobs
+      </button>
+      <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.25rem' }}>Apply for {job.title}</h1>
+      <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>{job.department} · {job.location}</p>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div>
+          <label style={{ display: 'block', fontWeight: 600, marginBottom: 4, fontSize: '0.875rem' }}>Full Name *</label>
+          <input
+            required
+            value={name}
+            onChange={e => setName(e.target.value)}
+            style={{ width: '100%', padding: '8px 12px', border: '1px solid #e5e7eb', borderRadius: 6, fontSize: '0.875rem' }}
+            placeholder="Jane Doe"
+          />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontWeight: 600, marginBottom: 4, fontSize: '0.875rem' }}>Email *</label>
+          <input
+            required
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            style={{ width: '100%', padding: '8px 12px', border: '1px solid #e5e7eb', borderRadius: 6, fontSize: '0.875rem' }}
+            placeholder="jane@example.com"
+          />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontWeight: 600, marginBottom: 4, fontSize: '0.875rem' }}>Phone</label>
+          <input
+            value={phone}
+            onChange={e => setPhone(e.target.value)}
+            style={{ width: '100%', padding: '8px 12px', border: '1px solid #e5e7eb', borderRadius: 6, fontSize: '0.875rem' }}
+            placeholder="+1 (555) 000-0000"
+          />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontWeight: 600, marginBottom: 4, fontSize: '0.875rem' }}>Cover Letter</label>
+          <textarea
+            value={cover}
+            onChange={e => setCover(e.target.value)}
+            rows={5}
+            style={{ width: '100%', padding: '8px 12px', border: '1px solid #e5e7eb', borderRadius: 6, fontSize: '0.875rem', resize: 'vertical' }}
+            placeholder="Tell us why you're interested in this role..."
+          />
+        </div>
+        <Button type="submit">Submit Application</Button>
+      </form>
     </div>
   );
 }

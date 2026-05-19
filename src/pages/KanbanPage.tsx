@@ -1,21 +1,21 @@
-import { useState } from 'react';
-import { useApplications, useJobs } from '@/hooks/useStorage';
-import { ApplicationStatus, Application } from '@/types';
+import { useApplications } from '@/hooks/useStorage';
+import { ApplicationStatus } from '@/types';
 import { Badge } from '@/components/ui/Badge';
+import { useNavigate } from 'react-router-dom';
 
-const COLUMNS: ApplicationStatus[] = ['new', 'screening', 'interview', 'offer', 'hired', 'rejected'];
+const COLUMNS: ApplicationStatus[] = ['applied', 'screening', 'interview', 'offer', 'hired', 'rejected'];
 
-const statusVariant: Record<ApplicationStatus, 'neutral' | 'info' | 'warning' | 'primary' | 'success' | 'danger' | 'purple'> = {
-  new: 'neutral',
+const COLUMN_VARIANTS: Record<ApplicationStatus, 'purple' | 'primary' | 'danger' | 'success' | 'warning' | 'info' | 'neutral'> = {
+  applied: 'neutral',
   screening: 'info',
-  interview: 'warning',
-  offer: 'primary',
+  interview: 'primary',
+  offer: 'warning',
   hired: 'success',
   rejected: 'danger',
 };
 
-const columnLabel: Record<ApplicationStatus, string> = {
-  new: 'New',
+const COLUMN_LABELS: Record<ApplicationStatus, string> = {
+  applied: 'Applied',
   screening: 'Screening',
   interview: 'Interview',
   offer: 'Offer',
@@ -25,77 +25,69 @@ const columnLabel: Record<ApplicationStatus, string> = {
 
 export function KanbanPage() {
   const { applications, updateApplicationStatus } = useApplications();
-  const { jobs } = useJobs();
-  const [dragging, setDragging] = useState<string | null>(null);
-
-  const byStatus = (status: ApplicationStatus) => applications.filter(a => a.status === status);
-
-  function handleDragStart(id: string) {
-    setDragging(id);
-  }
-
-  function handleDrop(status: ApplicationStatus) {
-    if (dragging) {
-      updateApplicationStatus(dragging, status);
-      setDragging(null);
-    }
-  }
+  const navigate = useNavigate();
 
   return (
-    <div>
-      <h1 style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1.5rem' }}>Pipeline Board</h1>
-      <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '1rem' }}>
-        {COLUMNS.map(col => (
-          <div
-            key={col}
-            style={{ minWidth: 220, flex: '0 0 220px', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}
-            onDragOver={e => e.preventDefault()}
-            onDrop={() => handleDrop(col)}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
-              <Badge variant={statusVariant[col]}>{columnLabel[col]}</Badge>
-              <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>{byStatus(col).length}</span>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', minHeight: 80 }}>
-              {byStatus(col).map(app => (
-                <KanbanCard
-                  key={app.id}
-                  application={app}
-                  jobTitle={jobs.find(j => j.id === app.jobId)?.title}
-                  onDragStart={() => handleDragStart(app.id)}
-                />
-              ))}
-            </div>
-          </div>
-        ))}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-6)' }}>
+      <div>
+        <h1 style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 'var(--spacing-1)' }}>Pipeline Board</h1>
+        <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>Drag-and-drop pipeline view of all applications.</p>
       </div>
-    </div>
-  );
-}
 
-function KanbanCard({ application, jobTitle, onDragStart }: { application: Application; jobTitle?: string; onDragStart: () => void }) {
-  return (
-    <div
-      draggable
-      onDragStart={onDragStart}
-      style={{
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border-color)',
-        borderRadius: 'var(--border-radius-sm)',
-        padding: '0.75rem',
-        cursor: 'grab',
-        boxShadow: 'var(--shadow-sm)',
-      }}
-    >
-      <p style={{ fontWeight: 600, fontSize: 'var(--font-size-sm)', color: 'var(--text-primary)', marginBottom: '0.25rem' }}>
-        {application.applicantName}
-      </p>
-      {jobTitle && (
-        <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>{jobTitle}</p>
-      )}
-      <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-        {new Date(application.appliedAt).toLocaleDateString()}
-      </p>
+      <div style={{ display: 'flex', gap: 'var(--spacing-4)', overflowX: 'auto', paddingBottom: 'var(--spacing-4)' }}>
+        {COLUMNS.map(col => {
+          const items = applications.filter(a => a.status === col);
+          return (
+            <div
+              key={col}
+              style={{
+                minWidth: 240,
+                background: 'var(--bg-base)',
+                borderRadius: 'var(--border-radius-lg)',
+                border: '1px solid var(--border-color)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 'var(--spacing-3)',
+                padding: 'var(--spacing-4)',
+                flexShrink: 0,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Badge variant={COLUMN_VARIANTS[col]}>{COLUMN_LABELS[col]}</Badge>
+                <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', fontWeight: 600 }}>{items.length}</span>
+              </div>
+              {items.map(app => (
+                <div
+                  key={app.id}
+                  style={{
+                    background: 'var(--bg-surface)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: 'var(--border-radius-md)',
+                    padding: 'var(--spacing-3)',
+                    cursor: 'pointer',
+                    transition: 'box-shadow 0.15s',
+                  }}
+                  onClick={() => navigate(`/applications/${app.id}`)}
+                >
+                  <div style={{ fontWeight: 600, fontSize: 'var(--font-size-sm)', color: 'var(--text-primary)', marginBottom: 4 }}>{app.applicantName}</div>
+                  <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', marginBottom: 8 }}>{app.jobTitle}</div>
+                  <select
+                    style={{ width: '100%', fontSize: '11px', padding: '3px 6px', borderRadius: 4, border: '1px solid var(--border-color)', background: 'var(--bg-base)', cursor: 'pointer' }}
+                    value={app.status}
+                    onChange={e => { e.stopPropagation(); updateApplicationStatus(app.id, e.target.value as ApplicationStatus); }}
+                    onClick={e => e.stopPropagation()}
+                  >
+                    {COLUMNS.map(s => <option key={s} value={s}>{COLUMN_LABELS[s]}</option>)}
+                  </select>
+                </div>
+              ))}
+              {items.length === 0 && (
+                <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: 'var(--font-size-xs)', padding: 'var(--spacing-4)' }}>Empty</div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

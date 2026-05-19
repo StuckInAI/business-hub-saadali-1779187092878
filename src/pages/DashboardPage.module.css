@@ -2,149 +2,126 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-6);
-  max-width: 1200px;
 }
 
-.pageHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.title {
+.header h1 {
   font-size: var(--font-size-2xl);
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 2px;
+  margin-bottom: var(--spacing-1);
 }
 
-.subtitle {
+.header p {
   font-size: var(--font-size-sm);
   color: var(--text-muted);
 }
 
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: var(--spacing-4);
 }
 
-.chartsRow {
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sectionTitle {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.card {
+  background: var(--bg-surface);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.tableHeader {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
   gap: var(--spacing-4);
+  padding: var(--spacing-3) var(--spacing-5);
+  background: var(--bg-base);
+  border-bottom: 1px solid var(--border-color);
 }
 
-.chartCard {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-md);
-  padding: var(--spacing-5);
-  box-shadow: var(--shadow-sm);
-}
-
-.chartTitle {
-  font-size: var(--font-size-base);
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: var(--spacing-4);
-}
-
-.empty {
+.th {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
   color: var(--text-muted);
-  font-size: var(--font-size-sm);
-  text-align: center;
-  padding: var(--spacing-8) 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-.barList {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-3);
-}
-
-.barItem {
-  display: flex;
+.tableRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: var(--spacing-4);
+  padding: var(--spacing-4) var(--spacing-5);
+  border-bottom: 1px solid var(--border-color);
   align-items: center;
+  transition: background 0.15s;
+}
+
+.tableRow:last-child {
+  border-bottom: none;
+}
+
+.tableRow:hover {
+  background: var(--bg-base);
+}
+
+.jobTitle {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.jobMeta {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.cell {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.pipelineGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: var(--spacing-3);
 }
 
-.barLabel {
-  font-size: var(--font-size-xs);
-  color: var(--text-secondary);
-  width: 140px;
-  flex-shrink: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.pipelineCard {
+  background: var(--bg-surface);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-color);
+  padding: var(--spacing-4);
+  text-align: center;
 }
 
-.barTrack {
-  flex: 1;
-  height: 8px;
-  background: var(--bg-base);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.barFill {
-  height: 100%;
-  border-radius: 4px;
-  transition: width 0.4s ease;
-}
-
-.barValue {
-  font-size: var(--font-size-xs);
+.pipelineCount {
+  font-size: var(--font-size-2xl);
   font-weight: 700;
   color: var(--text-primary);
-  width: 20px;
-  text-align: right;
+  margin-bottom: var(--spacing-1);
 }
 
-.rateCard {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-md);
-  padding: var(--spacing-5);
-  box-shadow: var(--shadow-sm);
-}
-
-.rateRow {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-4);
-}
-
-.rateItem {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-4);
-}
-
-.rateBar {
-  flex: 1;
-  height: 12px;
-  background: var(--bg-base);
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.rateBarFill {
-  height: 100%;
-  border-radius: 6px;
-  transition: width 0.4s ease;
-}
-
-.rateLabel {
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  width: 70px;
-  flex-shrink: 0;
-}
-
-.ratePercent {
-  font-size: var(--font-size-sm);
-  font-weight: 700;
-  width: 40px;
-  text-align: right;
+.pipelineLabel {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  font-weight: 500;
 }
