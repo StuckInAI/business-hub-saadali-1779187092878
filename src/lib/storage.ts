@@ -1,36 +1,18 @@
-import { Job, Application, HRUser } from '@/types';
+import { Job, Application, HRUser, ApplicationStatus } from '@/types';
 
-const KEYS = {
-  jobs: 'tf_jobs',
-  applications: 'tf_applications',
-  currentUserId: 'tf_current_user_id',
-};
+const JOBS_KEY = 'tf_jobs';
+const APPS_KEY = 'tf_applications';
+const USER_KEY = 'tf_current_user';
 
-// ---------- generic helpers ----------
+// ── Seed Data ──────────────────────────────────────────────────────────────
 
-function load<T>(key: string, fallback: T): T {
-  try {
-    const raw = localStorage.getItem(key);
-    if (!raw) return fallback;
-    return JSON.parse(raw) as T;
-  } catch {
-    return fallback;
-  }
-}
-
-function save<T>(key: string, value: T): void {
-  localStorage.setItem(key, JSON.stringify(value));
-}
-
-// ---------- seed data ----------
-
-export const SEED_USERS: HRUser[] = [
-  { id: 'u1', name: 'Alex Johnson', role: 'admin', avatar: 'AJ' },
-  { id: 'u2', name: 'Sam Rivera', role: 'recruiter', avatar: 'SR' },
-  { id: 'u3', name: 'Casey Lee', role: 'viewer', avatar: 'CL' },
+const DEFAULT_USERS: HRUser[] = [
+  { id: 'u1', name: 'Alex Johnson', email: 'alex@company.com', role: 'admin', avatar: 'AJ' },
+  { id: 'u2', name: 'Sam Rivera', email: 'sam@company.com', role: 'recruiter', avatar: 'SR' },
+  { id: 'u3', name: 'Casey Lee', email: 'casey@company.com', role: 'viewer', avatar: 'CL' },
 ];
 
-const SEED_JOBS: Job[] = [
+const DEFAULT_JOBS: Job[] = [
   {
     id: 'j1',
     title: 'Senior Frontend Engineer',
@@ -38,13 +20,13 @@ const SEED_JOBS: Job[] = [
     location: 'New York, NY',
     type: 'full-time',
     status: 'active',
-    description: 'Build world-class UIs.',
-    salary: '$130,000 - $160,000',
-    requirements: ['5+ years React', 'TypeScript', 'CSS-in-JS'],
+    description: 'We are looking for a Senior Frontend Engineer to join our growing team.',
+    salary: '$120,000 - $150,000',
+    requirements: ['5+ years React experience', 'TypeScript proficiency', 'CSS/design skills'],
     postedBy: 'u1',
     createdAt: new Date('2024-01-15').toISOString(),
     updatedAt: new Date('2024-01-15').toISOString(),
-    applicantCount: 0,
+    applicantCount: 12,
   },
   {
     id: 'j2',
@@ -53,101 +35,117 @@ const SEED_JOBS: Job[] = [
     location: 'Remote',
     type: 'full-time',
     status: 'active',
-    description: 'Shape our product experience.',
-    salary: '$110,000 - $140,000',
-    requirements: ['Figma', '3+ years product design'],
+    description: 'Join our design team to shape the future of our product.',
+    salary: '$90,000 - $120,000',
+    requirements: ['Figma expertise', '3+ years product design', 'UX research skills'],
     postedBy: 'u2',
     createdAt: new Date('2024-01-20').toISOString(),
     updatedAt: new Date('2024-01-20').toISOString(),
-    applicantCount: 0,
+    applicantCount: 8,
+  },
+  {
+    id: 'j3',
+    title: 'Marketing Manager',
+    department: 'marketing',
+    location: 'San Francisco, CA',
+    type: 'full-time',
+    status: 'paused',
+    description: 'Lead our marketing initiatives and grow our brand presence.',
+    salary: '$95,000 - $115,000',
+    requirements: ['5+ years marketing experience', 'B2B SaaS background', 'Data-driven mindset'],
+    postedBy: 'u1',
+    createdAt: new Date('2024-01-10').toISOString(),
+    updatedAt: new Date('2024-01-25').toISOString(),
+    applicantCount: 5,
   },
 ];
 
-const SEED_APPLICATIONS: Application[] = [
+const DEFAULT_APPLICATIONS: Application[] = [
   {
     id: 'a1',
     jobId: 'j1',
-    name: 'Taylor Smith',
-    email: 'taylor@example.com',
-    phone: '555-0100',
-    resumeUrl: '',
-    coverLetter: 'Excited to join the team!',
-    status: 'review',
-    appliedAt: new Date('2024-01-22').toISOString(),
-    updatedAt: new Date('2024-01-22').toISOString(),
-    notes: '',
+    applicantName: 'Jordan Patel',
+    applicantEmail: 'jordan@email.com',
+    phone: '555-0101',
+    resumeText: 'Experienced frontend developer with 6 years working with React and TypeScript.',
+    coverLetter: 'I am excited to apply for this position...',
+    status: 'interview' as ApplicationStatus,
+    appliedAt: new Date('2024-01-18').toISOString(),
+    updatedAt: new Date('2024-01-20').toISOString(),
+    notes: 'Strong candidate, schedule technical interview',
     rating: 4,
   },
   {
     id: 'a2',
     jobId: 'j1',
-    name: 'Jordan Patel',
-    email: 'jordan@example.com',
-    phone: '555-0101',
-    resumeUrl: '',
-    coverLetter: 'Long-time React developer.',
-    status: 'interview',
-    appliedAt: new Date('2024-01-23').toISOString(),
-    updatedAt: new Date('2024-01-24').toISOString(),
-    notes: 'Strong candidate',
-    rating: 5,
+    applicantName: 'Morgan Wu',
+    applicantEmail: 'morgan@email.com',
+    phone: '555-0102',
+    resumeText: 'Frontend engineer with expertise in React, Vue, and modern CSS.',
+    coverLetter: 'Your company mission aligns with my values...',
+    status: 'applied' as ApplicationStatus,
+    appliedAt: new Date('2024-01-19').toISOString(),
+    updatedAt: new Date('2024-01-19').toISOString(),
+    notes: '',
+    rating: 0,
   },
   {
     id: 'a3',
     jobId: 'j2',
-    name: 'Morgan Wu',
-    email: 'morgan@example.com',
-    phone: '555-0102',
-    resumeUrl: '',
-    coverLetter: 'Passionate about design systems.',
-    status: 'applied',
-    appliedAt: new Date('2024-01-25').toISOString(),
-    updatedAt: new Date('2024-01-25').toISOString(),
-    notes: '',
+    applicantName: 'Riley Chen',
+    applicantEmail: 'riley@email.com',
+    phone: '555-0103',
+    resumeText: 'Product designer with 4 years creating intuitive user experiences.',
+    coverLetter: 'I have been following your product journey...',
+    status: 'screening' as ApplicationStatus,
+    appliedAt: new Date('2024-01-22').toISOString(),
+    updatedAt: new Date('2024-01-23').toISOString(),
+    notes: 'Good portfolio',
     rating: 3,
   },
 ];
 
-// ---------- init ----------
+// ── Helpers ────────────────────────────────────────────────────────────────
 
-export function initStorage(): void {
-  if (!localStorage.getItem(KEYS.jobs)) {
-    save(KEYS.jobs, SEED_JOBS);
-  }
-  if (!localStorage.getItem(KEYS.applications)) {
-    save(KEYS.applications, SEED_APPLICATIONS);
-  }
-  if (!localStorage.getItem(KEYS.currentUserId)) {
-    save(KEYS.currentUserId, SEED_USERS[0].id);
+function read<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : fallback;
+  } catch {
+    return fallback;
   }
 }
 
-// ---------- jobs ----------
+function write<T>(key: string, value: T): void {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+// ── Public API ─────────────────────────────────────────────────────────────
+
+export function getUsers(): HRUser[] {
+  return DEFAULT_USERS;
+}
 
 export function getJobs(): Job[] {
-  return load<Job[]>(KEYS.jobs, []);
+  return read<Job[]>(JOBS_KEY, DEFAULT_JOBS);
 }
 
 export function saveJobs(jobs: Job[]): void {
-  save(KEYS.jobs, jobs);
+  write(JOBS_KEY, jobs);
 }
 
-// ---------- applications ----------
-
 export function getApplications(): Application[] {
-  return load<Application[]>(KEYS.applications, []);
+  return read<Application[]>(APPS_KEY, DEFAULT_APPLICATIONS);
 }
 
 export function saveApplications(apps: Application[]): void {
-  save(KEYS.applications, apps);
+  write(APPS_KEY, apps);
 }
 
-// ---------- current user ----------
-
 export function getCurrentUserId(): string {
-  return load<string>(KEYS.currentUserId, SEED_USERS[0].id);
+  return read<string>(USER_KEY, DEFAULT_USERS[0].id);
 }
 
 export function saveCurrentUserId(id: string): void {
-  save(KEYS.currentUserId, id);
+  write(USER_KEY, id);
 }

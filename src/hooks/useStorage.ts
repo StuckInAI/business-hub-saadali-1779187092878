@@ -1,130 +1,20 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import {
+  getUsers,
   getJobs,
   saveJobs,
   getApplications,
   saveApplications,
-  getUsers,
   getCurrentUserId,
   saveCurrentUserId,
 } from '@/lib/storage';
-import { Job, Application, ApplicationStatus, HRUser } from '@/types';
+import { Job, Application, HRUser, ApplicationStatus } from '@/types';
 
-function useLocalStorage<T>(key: string, fetcher: () => T, saver: (v: T) => void) {
-  const [value, setValue] = useState<T>(fetcher);
-
-  const update = useCallback(
-    (updater: T | ((prev: T) => T)) => {
-      setValue(prev => {
-        const next = typeof updater === 'function' ? (updater as (p: T) => T)(prev) : updater;
-        saver(next);
-        return next;
-      });
-    },
-    [saver]
-  );
-
-  return [value, update] as const;
-}
-
-export function useJobs() {
-  const [jobs, setJobs] = useLocalStorage<Job[]>('jobs', getJobs, saveJobs);
-
-  const addJob = useCallback(
-    (data: Omit<Job, 'id' | 'createdAt' | 'updatedAt' | 'applicantCount'>) => {
-      const now = new Date().toISOString();
-      const newJob: Job = {
-        ...data,
-        id: crypto.randomUUID(),
-        createdAt: now,
-        updatedAt: now,
-        applicantCount: 0,
-      };
-      setJobs(prev => [...prev, newJob]);
-      return newJob;
-    },
-    [setJobs]
-  );
-
-  const updateJob = useCallback(
-    (id: string, patch: Partial<Job>) => {
-      setJobs(prev =>
-        prev.map(j => (j.id === id ? { ...j, ...patch, updatedAt: new Date().toISOString() } : j))
-      );
-    },
-    [setJobs]
-  );
-
-  const deleteJob = useCallback(
-    (id: string) => {
-      setJobs(prev => prev.filter(j => j.id !== id));
-    },
-    [setJobs]
-  );
-
-  return { jobs, addJob, updateJob, deleteJob };
-}
-
-export function useApplications() {
-  const [applications, setApplications] = useLocalStorage<Application[]>(
-    'applications',
-    getApplications,
-    saveApplications
-  );
-
-  const addApplication = useCallback(
-    (data: Omit<Application, 'id'>) => {
-      const newApp: Application = {
-        ...data,
-        id: crypto.randomUUID(),
-      };
-      setApplications(prev => [...prev, newApp]);
-      return newApp;
-    },
-    [setApplications]
-  );
-
-  const updateApplicationStatus = useCallback(
-    (id: string, status: ApplicationStatus) => {
-      setApplications(prev =>
-        prev.map(a =>
-          a.id === id ? { ...a, status, updatedAt: new Date().toISOString() } : a
-        )
-      );
-    },
-    [setApplications]
-  );
-
-  const updateApplication = useCallback(
-    (id: string, patch: Partial<Application>) => {
-      setApplications(prev =>
-        prev.map(a =>
-          a.id === id ? { ...a, ...patch, updatedAt: new Date().toISOString() } : a
-        )
-      );
-    },
-    [setApplications]
-  );
-
-  const deleteApplication = useCallback(
-    (id: string) => {
-      setApplications(prev => prev.filter(a => a.id !== id));
-    },
-    [setApplications]
-  );
-
-  return {
-    applications,
-    addApplication,
-    updateApplicationStatus,
-    updateApplication,
-    deleteApplication,
-  };
-}
+// ── Current User ───────────────────────────────────────────────────────────
 
 export function useCurrentUser() {
-  const [users] = useState<HRUser[]>(getUsers);
-  const [currentUserId, setCurrentUserId] = useState<string>(getCurrentUserId);
+  const users = getUsers();
+  const [currentUserId, setCurrentUserId] = useState<string>(() => getCurrentUserId());
 
   const currentUser = users.find(u => u.id === currentUserId) ?? users[0];
 
@@ -134,4 +24,60 @@ export function useCurrentUser() {
   }, []);
 
   return { currentUser, users, switchUser };
+}
+
+// ── Jobs ───────────────────────────────────────────────────────────────────
+
+export function useJobs() {
+  const [jobs, setJobsState] = useState<Job[]>(() => getJobs());
+
+  const setJobs = useCallback((updated: Job[]) => {
+    setJobsState(updated);
+    saveJobs(updated);
+  }, []);
+
+  const addJob = useCallback((job: Job) => {
+    setJobs([...getJobs(), job]);
+  }, [setJobs]);
+
+  const updateJob = useCallback((updated: Job) => {
+    setJobs(getJobs().map(j => j.id === updated.id ? updated : j));
+  }, [setJobs]);
+
+  const deleteJob = useCallback((id: string) => {
+    setJobs(getJobs().filter(j => j.id !== id));
+  }, [setJobs]);
+
+  return { jobs, addJob, updateJob, deleteJob };
+}
+
+// ── Applications ───────────────────────────────────────────────────────────
+
+export function useApplications() {
+  const [applications, setAppsState] = useState<Application[]>(() => getApplications());
+
+  const setApps = useCallback((updated: Application[]) => {
+    setAppsState(updated);
+    saveApplications(updated);
+  }, []);
+
+  const addApplication = useCallback((app: Application) => {
+    setApps([...getApplications(), app]);
+  }, [setApps]);
+
+  const updateApplication = useCallback((updated: Application) => {
+    setApps(getApplications().map(a => a.id === updated.id ? updated : a));
+  }, [setApps]);
+
+  const updateStatus = useCallback((id: string, status: ApplicationStatus) => {
+    setApps(getApplications().map(a =>
+      a.id === id ? { ...a, status, updatedAt: new Date().toISOString() } : a
+    ));
+  }, [setApps]);
+
+  const deleteApplication = useCallback((id: string) => {
+    setApps(getApplications().filter(a => a.id !== id));
+  }, [setApps]);
+
+  return { applications, addApplication, updateApplication, updateStatus, deleteApplication };
 }
