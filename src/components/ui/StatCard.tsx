@@ -1,23 +1,19 @@
 import styles from './StatCard.module.css';
 
-type StatCardProps = {
-  label: string;
-  value: string | number;
+export type StatCardProps = {
+  title: string;
+  value: number | string;
   icon: React.ReactNode;
-  color?: string;
-  subtitle?: string;
+  color?: 'primary' | 'success' | 'warning' | 'info' | 'danger';
 };
 
-export function StatCard({ label, value, icon, color = 'var(--color-primary)', subtitle }: StatCardProps) {
+export function StatCard({ title, value, icon, color = 'primary' }: StatCardProps) {
   return (
-    <div className={styles.card}>
-      <div className={styles.iconWrap} style={{ background: color + '20', color }}>
-        {icon}
-      </div>
-      <div className={styles.content}>
-        <p className={styles.label}>{label}</p>
-        <p className={styles.value}>{value}</p>
-        {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
+    <div className={`${styles.card} ${styles[color]}`}>
+      <div className={styles.iconWrap}>{icon}</div>
+      <div className={styles.body}>
+        <span className={styles.value}>{value}</span>
+        <span className={styles.title}>{title}</span>
       </div>
     </div>
   );
