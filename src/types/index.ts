@@ -1,35 +1,19 @@
 export type UserRole = 'admin' | 'recruiter' | 'viewer';
 
-export type Department =
-  | 'engineering'
-  | 'design'
-  | 'marketing'
-  | 'sales'
-  | 'hr'
-  | 'finance'
-  | 'operations'
-  | 'product';
-
-export type JobType = 'full-time' | 'part-time' | 'contract' | 'internship' | 'remote';
-export type JobStatus = 'active' | 'paused' | 'closed';
-
-export type ApplicationStatus =
-  | 'new'
-  | 'screening'
-  | 'interview'
-  | 'offer'
-  | 'hired'
-  | 'rejected';
-
-export interface HRUser {
+export type HRUser = {
   id: string;
   name: string;
-  email: string;
   role: UserRole;
   avatar: string;
-}
+};
 
-export interface Job {
+export type Department = 'engineering' | 'design' | 'marketing' | 'sales' | 'hr' | 'finance' | 'operations' | 'product';
+
+export type JobType = 'full-time' | 'part-time' | 'contract' | 'internship' | 'remote';
+
+export type JobStatus = 'active' | 'paused' | 'closed';
+
+export type Job = {
   id: string;
   title: string;
   department: Department;
@@ -37,25 +21,28 @@ export interface Job {
   type: JobType;
   status: JobStatus;
   description: string;
-  salary: string;
   requirements: string[];
+  salary: string;
   postedBy: string;
-  applicantCount: number;
   createdAt: string;
   updatedAt: string;
-}
+  applicantCount: number;
+};
 
-export interface Application {
+export type ApplicationStatus = 'new' | 'screening' | 'interview' | 'offer' | 'hired' | 'rejected';
+
+export type Application = {
   id: string;
   jobId: string;
   jobTitle: string;
   applicantName: string;
   applicantEmail: string;
-  applicantPhone?: string;
+  applicantPhone: string;
   resumeText: string;
   coverLetter: string;
   status: ApplicationStatus;
-  notes: string;
   appliedAt: string;
   updatedAt: string;
-}
+  notes: string;
+  rating: number;
+};
