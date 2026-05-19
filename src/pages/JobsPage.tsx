@@ -1,113 +1,92 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useJobs, useCurrentUser } from '@/hooks/useStorage';
-import { Job, JobStatus } from '@/types';
-import { Badge } from '@/components/ui/Badge';
+import { Plus } from 'lucide-react';
+import { useJobs } from '@/hooks/useStorage';
+import { useOutletContext } from 'react-router-dom';
+import { Job } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { JobForm } from '@/components/jobs/JobForm';
+import { Badge } from '@/components/ui/Badge';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { Briefcase, MapPin, Users } from 'lucide-react';
+import { Briefcase } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import styles from './JobsPage.module.css';
 
+type OutletCtx = { currentUser: { id: string; name: string; role: string } };
+
+const statusVariant: Record<string, 'success' | 'warning' | 'neutral'> = {
+  active: 'success',
+  paused: 'warning',
+  closed: 'neutral',
+};
+
 export function JobsPage() {
-  const navigate = useNavigate();
+  const { currentUser } = useOutletContext<OutletCtx>();
   const { jobs, addJob, updateJob, deleteJob } = useJobs();
-  const { currentUser } = useCurrentUser();
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<JobStatus | 'all'>('all');
+  const navigate = useNavigate();
   const [showCreate, setShowCreate] = useState(false);
   const [editing, setEditing] = useState<Job | null>(null);
 
-  const filtered = jobs.filter(j => {
-    const matchSearch =
-      j.title.toLowerCase().includes(search.toLowerCase()) ||
-      j.department.toLowerCase().includes(search.toLowerCase()) ||
-      j.location.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = statusFilter === 'all' || j.status === statusFilter;
-    return matchSearch && matchStatus;
-  });
+  const canEdit = currentUser.role === 'admin' || currentUser.role === 'recruiter';
 
   return (
-    <div className={styles.page}>
+    <div>
       <div className={styles.header}>
-        <div className={styles.headerLeft}>
-          <h1>Job Listings</h1>
-          <p>{jobs.length} total job{jobs.length !== 1 ? 's' : ''}</p>
+        <div>
+          <h1 className={styles.title}>Job Listings</h1>
+          <p className={styles.subtitle}>{jobs.length} open positions</p>
         </div>
-        {currentUser.role !== 'viewer' && (
-          <Button onClick={() => setShowCreate(true)}>+ New Job</Button>
+        {canEdit && (
+          <Button onClick={() => setShowCreate(true)}>
+            <Plus size={16} /> New Job
+          </Button>
         )}
       </div>
 
-      <div className={styles.filters}>
-        <input
-          className={styles.searchInput}
-          placeholder="Search jobs..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
-        <select
-          className={styles.select}
-          value={statusFilter}
-          onChange={e => setStatusFilter(e.target.value as JobStatus | 'all')}
-        >
-          <option value="all">All Statuses</option>
-          <option value="active">Active</option>
-          <option value="paused">Paused</option>
-          <option value="closed">Closed</option>
-        </select>
-      </div>
-
-      {filtered.length === 0 ? (
+      {jobs.length === 0 ? (
         <EmptyState
           icon={<Briefcase size={40} />}
-          title="No jobs found"
-          description={jobs.length === 0 ? 'Create your first job listing to get started.' : 'No jobs match your current filters.'}
-          action={currentUser.role !== 'viewer' ? <Button onClick={() => setShowCreate(true)}>Create Job</Button> : undefined}
+          title="No job listings yet"
+          description="Create your first job listing to start attracting candidates."
+          action={canEdit ? <Button onClick={() => setShowCreate(true)}>Create Job</Button> : undefined}
         />
       ) : (
         <div className={styles.grid}>
-          {filtered.map(job => (
+          {jobs.map(job => (
             <div key={job.id} className={styles.card} onClick={() => navigate(`/job-listings/${job.id}`)}>
               <div className={styles.cardHeader}>
-                <div>
-                  <div className={styles.cardTitle}>{job.title}</div>
-                  <div className={styles.cardMeta}>{job.department} · <MapPin size={11} style={{ display: 'inline' }} /> {job.location}</div>
+                <h3 className={styles.jobTitle}>{job.title}</h3>
+                <Badge variant={statusVariant[job.status]}>{job.status}</Badge>
+              </div>
+              <p className={styles.department}>{job.department} · {job.location}</p>
+              <p className={styles.type}>{job.type} {job.salary ? `· ${job.salary}` : ''}</p>
+              <p className={styles.applicants}>{job.applicantCount} applicant{job.applicantCount !== 1 ? 's' : ''}</p>
+              {canEdit && (
+                <div className={styles.actions} onClick={e => e.stopPropagation()}>
+                  <Button variant="secondary" size="sm" onClick={() => setEditing(job)}>Edit</Button>
+                  <Button variant="danger" size="sm" onClick={() => deleteJob(job.id)}>Delete</Button>
                 </div>
-                <Badge variant={job.status === 'active' ? 'success' : job.status === 'paused' ? 'warning' : 'neutral'}>
-                  {job.status.charAt(0).toUpperCase() + job.status.slice(1)}
-                </Badge>
-              </div>
-              <div className={styles.cardFooter}>
-                <span className={styles.cardStat}><Users size={13} style={{ display: 'inline' }} /> {job.applicantCount} applicant{job.applicantCount !== 1 ? 's' : ''}</span>
-                {currentUser.role !== 'viewer' && (
-                  <div className={styles.cardActions} onClick={e => e.stopPropagation()}>
-                    <Button size="sm" variant="secondary" onClick={() => setEditing(job)}>Edit</Button>
-                    <Button size="sm" variant="danger" onClick={() => { if (confirm('Delete this job?')) deleteJob(job.id); }}>Delete</Button>
-                  </div>
-                )}
-              </div>
+              )}
             </div>
           ))}
         </div>
       )}
 
-      <Modal isOpen={showCreate} onClose={() => setShowCreate(false)} title="Create New Job" size="lg">
+      <Modal isOpen={showCreate} onClose={() => setShowCreate(false)} title="Create Job Listing" size="lg">
         <JobForm
-          onSubmit={data => { addJob(data); setShowCreate(false); }}
+          postedBy={currentUser.id}
           onCancel={() => setShowCreate(false)}
-          postedBy={currentUser.name}
+          onSubmit={data => { addJob(data); setShowCreate(false); }}
         />
       </Modal>
 
-      <Modal isOpen={!!editing} onClose={() => setEditing(null)} title="Edit Job" size="lg">
+      <Modal isOpen={!!editing} onClose={() => setEditing(null)} title="Edit Job Listing" size="lg">
         {editing && (
           <JobForm
             initial={editing}
-            onSubmit={data => { updateJob(editing.id, data); setEditing(null); }}
+            postedBy={currentUser.id}
             onCancel={() => setEditing(null)}
-            postedBy={currentUser.name}
+            onSubmit={data => { updateJob({ ...editing, ...data, updatedAt: new Date().toISOString() }); setEditing(null); }}
           />
         )}
       </Modal>

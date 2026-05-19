@@ -1,5 +1,3 @@
-// ── Enums / union types ────────────────────────────────────────────────────
-
 export type UserRole = 'admin' | 'recruiter' | 'viewer';
 
 export type Department =
@@ -13,18 +11,15 @@ export type Department =
   | 'product';
 
 export type JobType = 'full-time' | 'part-time' | 'contract' | 'internship' | 'remote';
-
 export type JobStatus = 'active' | 'paused' | 'closed';
 
 export type ApplicationStatus =
-  | 'applied'
+  | 'new'
   | 'screening'
   | 'interview'
   | 'offer'
   | 'hired'
   | 'rejected';
-
-// ── Models ─────────────────────────────────────────────────────────────────
 
 export interface HRUser {
   id: string;
@@ -45,22 +40,22 @@ export interface Job {
   salary: string;
   requirements: string[];
   postedBy: string;
+  applicantCount: number;
   createdAt: string;
   updatedAt: string;
-  applicantCount: number;
 }
 
 export interface Application {
   id: string;
   jobId: string;
+  jobTitle: string;
   applicantName: string;
   applicantEmail: string;
-  phone: string;
+  applicantPhone?: string;
   resumeText: string;
   coverLetter: string;
   status: ApplicationStatus;
+  notes: string;
   appliedAt: string;
   updatedAt: string;
-  notes: string;
-  rating: number;
 }
