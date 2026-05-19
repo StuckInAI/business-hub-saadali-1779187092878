@@ -1,28 +1,8 @@
 import { useNavigate } from 'react-router-dom';
+import { Briefcase, Users, Clock, TrendingUp } from 'lucide-react';
 import { useJobs, useApplications } from '@/hooks/useStorage';
-import { ApplicationStatus } from '@/types';
 import { StatCard } from '@/components/ui/StatCard';
-import { Badge } from '@/components/ui/Badge';
-import { Briefcase, Users, TrendingUp, Clock } from 'lucide-react';
 import styles from './DashboardPage.module.css';
-
-const statusLabel: Record<ApplicationStatus, string> = {
-  new: 'New',
-  screening: 'Screening',
-  interview: 'Interview',
-  offer: 'Offer',
-  hired: 'Hired',
-  rejected: 'Rejected',
-};
-
-const statusVariant: Record<ApplicationStatus, 'purple' | 'primary' | 'success' | 'danger' | 'warning' | 'info' | 'neutral'> = {
-  new: 'neutral',
-  screening: 'info',
-  interview: 'primary',
-  offer: 'warning',
-  hired: 'success',
-  rejected: 'danger',
-};
 
 export function DashboardPage() {
   const navigate = useNavigate();
@@ -30,24 +10,28 @@ export function DashboardPage() {
   const { applications } = useApplications();
 
   const activeJobs = jobs.filter(j => j.status === 'active').length;
-  const totalApps = applications.length;
-  const hiredCount = applications.filter(a => a.status === 'hired').length;
-  const newApps = applications.filter(a => a.status === 'new').length;
+  const totalApplications = applications.length;
+  const pendingReview = applications.filter(a => a.status === 'new' || a.status === 'screening').length;
+  const inInterview = applications.filter(a => a.status === 'interview').length;
 
-  const recent = [...applications]
+  const recentApplications = [...applications]
     .sort((a, b) => new Date(b.appliedAt).getTime() - new Date(a.appliedAt).getTime())
+    .slice(0, 5);
+
+  const recentJobs = [...jobs]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5);
 
   return (
     <div className={styles.page}>
       <div className={styles.pageHeader}>
         <h1 className={styles.pageTitle}>Dashboard</h1>
-        <p className={styles.pageSubtitle}>Welcome back! Here's what's happening with your hiring pipeline.</p>
+        <p className={styles.pageSubtitle}>Welcome back! Here's what's happening.</p>
       </div>
 
       <div className={styles.statsGrid}>
         <StatCard
-          title="Active Jobs"
+          title="Active Job Listings"
           value={activeJobs}
           icon={<Briefcase size={22} />}
           color="primary"
@@ -55,52 +39,72 @@ export function DashboardPage() {
         />
         <StatCard
           title="Total Applications"
-          value={totalApps}
+          value={totalApplications}
           icon={<Users size={22} />}
           color="info"
           onClick={() => navigate('/applications')}
         />
         <StatCard
-          title="Hired This Cycle"
-          value={hiredCount}
-          icon={<TrendingUp size={22} />}
-          color="success"
-        />
-        <StatCard
-          title="New (Unreviewed)"
-          value={newApps}
+          title="Pending Review"
+          value={pendingReview}
           icon={<Clock size={22} />}
           color="warning"
           onClick={() => navigate('/applications')}
         />
+        <StatCard
+          title="In Interview"
+          value={inInterview}
+          icon={<TrendingUp size={22} />}
+          color="success"
+        />
       </div>
 
-      <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>Recent Applications</h2>
-        {recent.length === 0 ? (
-          <p className={styles.empty}>No applications yet.</p>
-        ) : (
-          <div className={styles.table}>
-            <div className={styles.tableHeader}>
-              <span>Applicant</span>
-              <span>Job</span>
-              <span>Status</span>
-              <span>Applied</span>
-            </div>
-            {recent.map(app => (
-              <div
-                key={app.id}
-                className={styles.tableRow}
-                onClick={() => navigate(`/applications/${app.id}`)}
-              >
-                <span className={styles.name}>{app.applicantName}</span>
-                <span className={styles.job}>{app.jobTitle}</span>
-                <Badge variant={statusVariant[app.status]}>{statusLabel[app.status]}</Badge>
-                <span className={styles.date}>{new Date(app.appliedAt).toLocaleDateString()}</span>
-              </div>
-            ))}
+      <div className={styles.grid}>
+        <section className={styles.card}>
+          <div className={styles.cardHeader}>
+            <h2 className={styles.cardTitle}>Recent Applications</h2>
           </div>
-        )}
+          <div className={styles.cardBody}>
+            {recentApplications.length === 0 ? (
+              <p style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-sm)' }}>No applications yet.</p>
+            ) : (
+              <ul className={styles.list}>
+                {recentApplications.map(app => (
+                  <li key={app.id} className={styles.listItem} onClick={() => navigate(`/applications/${app.id}`)}>
+                    <div>
+                      <p className={styles.listItemTitle}>{app.applicantName}</p>
+                      <p className={styles.listItemSub}>{app.jobTitle}</p>
+                    </div>
+                    <span className={styles.statusBadge} data-status={app.status}>{app.status}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </section>
+
+        <section className={styles.card}>
+          <div className={styles.cardHeader}>
+            <h2 className={styles.cardTitle}>Recent Job Listings</h2>
+          </div>
+          <div className={styles.cardBody}>
+            {recentJobs.length === 0 ? (
+              <p style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-sm)' }}>No jobs yet.</p>
+            ) : (
+              <ul className={styles.list}>
+                {recentJobs.map(job => (
+                  <li key={job.id} className={styles.listItem} onClick={() => navigate(`/job-listings/${job.id}`)}>
+                    <div>
+                      <p className={styles.listItemTitle}>{job.title}</p>
+                      <p className={styles.listItemSub}>{job.department} &bull; {job.location}</p>
+                    </div>
+                    <span className={styles.statusBadge} data-status={job.status}>{job.status}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </section>
       </div>
     </div>
   );

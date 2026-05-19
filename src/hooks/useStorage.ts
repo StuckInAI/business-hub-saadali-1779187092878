@@ -1,26 +1,17 @@
 import { useState, useEffect } from 'react';
-import { Application, ApplicationStatus, HRUser, Job } from '@/types';
+import { HRUser, Job, Application } from '@/types';
 
-const JOBS_KEY = 'talentflow_jobs';
-const APPLICATIONS_KEY = 'talentflow_applications';
-const USER_KEY = 'talentflow_current_user';
-
-function loadFromStorage<T>(key: string, fallback: T): T {
+function getItem<T>(key: string, fallback: T): T {
   try {
     const raw = localStorage.getItem(key);
-    if (raw) return JSON.parse(raw) as T;
+    return raw ? (JSON.parse(raw) as T) : fallback;
   } catch {
-    // ignore
+    return fallback;
   }
-  return fallback;
 }
 
-function saveToStorage<T>(key: string, value: T): void {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    // ignore
-  }
+function setItem<T>(key: string, value: T): void {
+  localStorage.setItem(key, JSON.stringify(value));
 }
 
 const DEFAULT_USERS: HRUser[] = [
@@ -29,51 +20,52 @@ const DEFAULT_USERS: HRUser[] = [
   { id: 'u3', name: 'Carol Viewer', email: 'carol@company.com', role: 'viewer', avatar: 'CV' },
 ];
 
-const SEED_JOBS: Job[] = [
+const DEFAULT_JOBS: Job[] = [
   {
     id: 'j1',
     title: 'Senior Frontend Engineer',
     department: 'engineering',
-    location: 'Remote',
+    location: 'New York, NY',
     type: 'full-time',
     status: 'active',
-    description: 'Build amazing user interfaces with React and TypeScript.',
+    description: 'We are looking for a Senior Frontend Engineer to join our team.',
     salary: '$120,000 - $150,000',
-    requirements: ['5+ years React', 'TypeScript', 'CSS expertise'],
+    requirements: ['5+ years experience', 'React proficiency', 'TypeScript'],
     postedBy: 'u1',
-    applicantCount: 3,
     createdAt: new Date(Date.now() - 7 * 86400000).toISOString(),
     updatedAt: new Date(Date.now() - 7 * 86400000).toISOString(),
+    applicantCount: 3,
   },
   {
     id: 'j2',
     title: 'Product Designer',
     department: 'design',
-    location: 'New York, NY',
+    location: 'Remote',
     type: 'full-time',
     status: 'active',
-    description: 'Design intuitive product experiences.',
-    salary: '$100,000 - $130,000',
-    requirements: ['Figma', 'User research', '3+ years experience'],
+    description: 'Join our design team to craft beautiful user experiences.',
+    salary: '$90,000 - $120,000',
+    requirements: ['3+ years experience', 'Figma', 'User research'],
     postedBy: 'u2',
-    applicantCount: 2,
     createdAt: new Date(Date.now() - 5 * 86400000).toISOString(),
     updatedAt: new Date(Date.now() - 5 * 86400000).toISOString(),
+    applicantCount: 0,
   },
 ];
 
-const SEED_APPLICATIONS: Application[] = [
+const DEFAULT_APPLICATIONS: Application[] = [
   {
     id: 'a1',
     jobId: 'j1',
     jobTitle: 'Senior Frontend Engineer',
-    applicantName: 'Jane Doe',
+    applicantName: 'Jane Smith',
     applicantEmail: 'jane@example.com',
-    applicantPhone: '555-0100',
-    resumeText: 'Experienced frontend developer with 6 years in React.',
-    coverLetter: 'I am excited to apply for this position.',
+    applicantPhone: '555-0101',
+    resumeText: 'Experienced frontend engineer with 6 years in React.',
+    coverLetter: 'I am excited to apply for this role.',
     status: 'new',
     notes: '',
+    rating: 0,
     appliedAt: new Date(Date.now() - 2 * 86400000).toISOString(),
     updatedAt: new Date(Date.now() - 2 * 86400000).toISOString(),
   },
@@ -81,100 +73,79 @@ const SEED_APPLICATIONS: Application[] = [
     id: 'a2',
     jobId: 'j1',
     jobTitle: 'Senior Frontend Engineer',
-    applicantName: 'John Smith',
+    applicantName: 'John Doe',
     applicantEmail: 'john@example.com',
-    applicantPhone: '555-0101',
-    resumeText: 'Full-stack developer pivoting to frontend.',
-    coverLetter: 'Looking forward to contributing to your team.',
+    applicantPhone: '555-0102',
+    resumeText: 'Full-stack developer with strong TypeScript skills.',
+    coverLetter: 'I would love to join your team.',
     status: 'screening',
-    notes: 'Strong portfolio.',
-    appliedAt: new Date(Date.now() - 3 * 86400000).toISOString(),
+    notes: 'Strong candidate',
+    rating: 4,
+    appliedAt: new Date(Date.now() - 1 * 86400000).toISOString(),
     updatedAt: new Date(Date.now() - 1 * 86400000).toISOString(),
   },
   {
     id: 'a3',
-    jobId: 'j2',
-    jobTitle: 'Product Designer',
-    applicantName: 'Sara Lee',
-    applicantEmail: 'sara@example.com',
-    applicantPhone: '555-0102',
-    resumeText: 'Designer with 4 years of product design experience.',
-    coverLetter: 'Design is my passion.',
+    jobId: 'j1',
+    jobTitle: 'Senior Frontend Engineer',
+    applicantName: 'Emily Chen',
+    applicantEmail: 'emily@example.com',
+    applicantPhone: '555-0103',
+    resumeText: 'Frontend specialist with React and Vue experience.',
+    coverLetter: 'This role aligns perfectly with my background.',
     status: 'interview',
-    notes: 'Great Figma skills.',
-    appliedAt: new Date(Date.now() - 4 * 86400000).toISOString(),
+    notes: 'Scheduled for technical interview',
+    rating: 5,
+    appliedAt: new Date(Date.now() - 1 * 86400000).toISOString(),
     updatedAt: new Date(Date.now() - 1 * 86400000).toISOString(),
   },
 ];
 
 export function useJobs() {
-  const [jobs, setJobs] = useState<Job[]>(() => loadFromStorage(JOBS_KEY, SEED_JOBS));
+  const [jobs, setJobsState] = useState<Job[]>(() => getItem('hr_jobs', DEFAULT_JOBS));
 
-  useEffect(() => { saveToStorage(JOBS_KEY, jobs); }, [jobs]);
+  const setJobs = (updated: Job[]) => {
+    setJobsState(updated);
+    setItem('hr_jobs', updated);
+  };
 
-  function addJob(data: Omit<Job, 'id' | 'createdAt' | 'updatedAt' | 'applicantCount'>) {
-    const now = new Date().toISOString();
-    const job: Job = {
-      ...data,
-      id: `j${Date.now()}`,
-      applicantCount: 0,
-      createdAt: now,
-      updatedAt: now,
-    };
-    setJobs(prev => [job, ...prev]);
-  }
-
-  function updateJob(updated: Job) {
-    setJobs(prev => prev.map(j => j.id === updated.id ? { ...updated, updatedAt: new Date().toISOString() } : j));
-  }
-
-  function deleteJob(id: string) {
-    setJobs(prev => prev.filter(j => j.id !== id));
-  }
+  const addJob = (job: Job) => setJobs([...jobs, job]);
+  const updateJob = (job: Job) => setJobs(jobs.map(j => j.id === job.id ? job : j));
+  const deleteJob = (id: string) => setJobs(jobs.filter(j => j.id !== id));
 
   return { jobs, addJob, updateJob, deleteJob };
 }
 
 export function useApplications() {
-  const [applications, setApplications] = useState<Application[]>(() =>
-    loadFromStorage(APPLICATIONS_KEY, SEED_APPLICATIONS)
+  const [applications, setApplicationsState] = useState<Application[]>(() =>
+    getItem('hr_applications', DEFAULT_APPLICATIONS)
   );
 
-  useEffect(() => { saveToStorage(APPLICATIONS_KEY, applications); }, [applications]);
+  const setApplications = (updated: Application[]) => {
+    setApplicationsState(updated);
+    setItem('hr_applications', updated);
+  };
 
-  function addApplication(app: Application) {
-    setApplications(prev => [app, ...prev]);
-  }
+  const addApplication = (app: Application) => setApplications([...applications, app]);
+  const updateApplication = (app: Application) =>
+    setApplications(applications.map(a => a.id === app.id ? app : a));
+  const deleteApplication = (id: string) =>
+    setApplications(applications.filter(a => a.id !== id));
 
-  function updateApplication(updated: Application) {
-    setApplications(prev =>
-      prev.map(a => a.id === updated.id ? { ...updated, updatedAt: new Date().toISOString() } : a)
-    );
-  }
-
-  function updateStatus(id: string, status: ApplicationStatus) {
-    setApplications(prev =>
-      prev.map(a => a.id === id ? { ...a, status, updatedAt: new Date().toISOString() } : a)
-    );
-  }
-
-  function deleteApplication(id: string) {
-    setApplications(prev => prev.filter(a => a.id !== id));
-  }
-
-  return { applications, addApplication, updateApplication, updateStatus, deleteApplication };
+  return { applications, addApplication, updateApplication, deleteApplication };
 }
 
 export function useCurrentUser() {
-  const [currentUser, setCurrentUser] = useState<HRUser>(() =>
-    loadFromStorage(USER_KEY, DEFAULT_USERS[0])
-  );
+  const [users] = useState<HRUser[]>(DEFAULT_USERS);
+  const [currentUser, setCurrentUserState] = useState<HRUser>(() => {
+    const stored = getItem<string | null>('hr_current_user_id', null);
+    return DEFAULT_USERS.find(u => u.id === stored) ?? DEFAULT_USERS[0];
+  });
 
-  useEffect(() => { saveToStorage(USER_KEY, currentUser); }, [currentUser]);
+  const switchUser = (user: HRUser) => {
+    setCurrentUserState(user);
+    setItem('hr_current_user_id', user.id);
+  };
 
-  function switchUser(user: HRUser) {
-    setCurrentUser(user);
-  }
-
-  return { currentUser, users: DEFAULT_USERS, switchUser };
+  return { currentUser, users, switchUser };
 }

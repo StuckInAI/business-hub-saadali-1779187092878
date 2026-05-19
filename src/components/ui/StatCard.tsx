@@ -4,16 +4,21 @@ export type StatCardProps = {
   title: string;
   value: number | string;
   icon: React.ReactNode;
-  color?: 'primary' | 'success' | 'warning' | 'info' | 'danger';
+  color?: 'primary' | 'success' | 'warning' | 'danger' | 'info';
+  onClick?: () => void | Promise<void>;
 };
 
-export function StatCard({ title, value, icon, color = 'primary' }: StatCardProps) {
+export function StatCard({ title, value, icon, color = 'primary', onClick }: StatCardProps) {
   return (
-    <div className={`${styles.card} ${styles[color]}`}>
-      <div className={styles.iconWrap}>{icon}</div>
-      <div className={styles.body}>
-        <span className={styles.value}>{value}</span>
-        <span className={styles.title}>{title}</span>
+    <div
+      className={`${styles.card} ${styles[color]} ${onClick ? styles.clickable : ''}`}
+      onClick={onClick}
+      style={onClick ? { cursor: 'pointer' } : undefined}
+    >
+      <div className={styles.icon}>{icon}</div>
+      <div className={styles.content}>
+        <p className={styles.title}>{title}</p>
+        <p className={styles.value}>{value}</p>
       </div>
     </div>
   );

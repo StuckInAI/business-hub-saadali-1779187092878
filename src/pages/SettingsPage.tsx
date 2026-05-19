@@ -1,76 +1,61 @@
-import { useState } from 'react';
 import { useCurrentUser } from '@/hooks/useStorage';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
 
 export function SettingsPage() {
-  const { currentUser, users } = useCurrentUser();
-  const [saved, setSaved] = useState(false);
-
-  function handleSave(e: React.FormEvent) {
-    e.preventDefault();
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
-  }
-
-  const roleVariant: Record<string, 'primary' | 'success' | 'warning'> = {
-    admin: 'primary',
-    recruiter: 'success',
-    viewer: 'warning',
-  };
+  const { currentUser, users, switchUser } = useCurrentUser();
 
   return (
-    <div style={{ maxWidth: 640, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-      <h1 style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 700, color: 'var(--text-primary)' }}>Settings</h1>
+    <div style={{ maxWidth: '600px' }}>
+      <h1 style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 700, marginBottom: 'var(--spacing-6)' }}>Settings</h1>
 
-      <section style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 'var(--border-radius-md)', padding: '1.5rem' }}>
-        <h2 style={{ fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1rem' }}>Current User</h2>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-          <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--color-primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '1.1rem' }}>
+      <section style={{ background: 'var(--bg-surface)', borderRadius: 'var(--border-radius-lg)', padding: 'var(--spacing-6)', marginBottom: 'var(--spacing-6)', border: '1px solid var(--border-color)' }}>
+        <h2 style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700, marginBottom: 'var(--spacing-4)' }}>Current User</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-4)' }}>
+          <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--color-primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 'var(--font-size-base)' }}>
             {currentUser.avatar}
           </div>
           <div>
-            <p style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{currentUser.name}</p>
+            <p style={{ fontWeight: 700, fontSize: 'var(--font-size-base)' }}>{currentUser.name}</p>
             <p style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-sm)' }}>{currentUser.email}</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-sm)', textTransform: 'capitalize' }}>{currentUser.role}</p>
           </div>
-          <Badge variant={roleVariant[currentUser.role] ?? 'neutral'}>{currentUser.role}</Badge>
         </div>
-        <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)' }}>Switch users via the top-right dropdown to simulate different permission levels.</p>
       </section>
 
-      <section style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 'var(--border-radius-md)', padding: '1.5rem' }}>
-        <h2 style={{ fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1rem' }}>Team Members</h2>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+      <section style={{ background: 'var(--bg-surface)', borderRadius: 'var(--border-radius-lg)', padding: 'var(--spacing-6)', border: '1px solid var(--border-color)' }}>
+        <h2 style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700, marginBottom: 'var(--spacing-4)' }}>Switch User (Demo)</h2>
+        <p style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--spacing-4)' }}>
+          This is a demo app. Switch between user roles to see different permission levels.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-3)' }}>
           {users.map(u => (
-            <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem', border: '1px solid var(--border-color)', borderRadius: 'var(--border-radius-sm)' }}>
-              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--color-primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.85rem' }}>
+            <button
+              key={u.id}
+              onClick={() => switchUser(u)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--spacing-3)',
+                padding: 'var(--spacing-3) var(--spacing-4)',
+                background: currentUser.id === u.id ? 'var(--color-primary-light)' : 'var(--bg-base)',
+                border: currentUser.id === u.id ? '1px solid var(--color-primary)' : '1px solid var(--border-color)',
+                borderRadius: 'var(--border-radius-md)',
+                cursor: 'pointer',
+                textAlign: 'left',
+              }}
+            >
+              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--color-primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 'var(--font-size-xs)', flexShrink: 0 }}>
                 {u.avatar}
               </div>
-              <div style={{ flex: 1 }}>
-                <p style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 'var(--font-size-sm)' }}>{u.name}</p>
-                <p style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-xs)' }}>{u.email}</p>
+              <div>
+                <p style={{ fontWeight: 600, fontSize: 'var(--font-size-sm)' }}>{u.name}</p>
+                <p style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-xs)', textTransform: 'capitalize' }}>{u.role}</p>
               </div>
-              <Badge variant={roleVariant[u.role] ?? 'neutral'}>{u.role}</Badge>
-            </div>
+              {currentUser.id === u.id && (
+                <span style={{ marginLeft: 'auto', fontSize: 'var(--font-size-xs)', color: 'var(--color-primary)', fontWeight: 600 }}>Active</span>
+              )}
+            </button>
           ))}
         </div>
-      </section>
-
-      <section style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 'var(--border-radius-md)', padding: '1.5rem' }}>
-        <h2 style={{ fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1rem' }}>Preferences</h2>
-        <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div>
-            <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '0.35rem' }}>Company Name</label>
-            <input
-              style={{ width: '100%', padding: '9px 12px', borderRadius: 'var(--border-radius-sm)', border: '1px solid var(--border-color)', fontSize: 'var(--font-size-sm)', background: 'var(--bg-surface)', color: 'var(--text-primary)', outline: 'none' }}
-              defaultValue="TalentFlow Inc."
-            />
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', alignItems: 'center' }}>
-            {saved && <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-secondary)' }}>Saved!</span>}
-            <Button type="submit">Save Changes</Button>
-          </div>
-        </form>
       </section>
     </div>
   );
